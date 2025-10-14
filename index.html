@@ -1,187 +1,200 @@
 <!DOCTYPE html>
 <html lang="bg">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Пътуването на въглеродната молекула</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CO₂ Journey</title>
 <style>
   body {
     margin: 0;
-    background: radial-gradient(circle at center, #0b001a 20%, #000);
-    color: white;
+    padding: 0;
+    background: #000010;
+    color: #eee;
     font-family: 'Poppins', sans-serif;
     overflow: hidden;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   h1 {
-    margin-top: 50px;
-    color: #d48fff;
-    text-shadow: 0 0 20px #b84fff, 0 0 60px #ff33cc;
+    margin-top: 40px;
+    color: #c27cff;
+    text-shadow: 0 0 20px #9900ff;
     font-size: 2em;
+    text-align: center;
   }
 
   .back {
     position: absolute;
     top: 20px;
-    left: 25px;
-    background: rgba(120, 0, 255, 0.9);
+    left: 20px;
     padding: 8px 18px;
-    border-radius: 12px;
+    background: rgba(120,0,255,0.8);
     color: white;
-    font-weight: 600;
+    border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0 0 20px #a400ff;
-    transition: 0.2s;
+    font-weight: 600;
+    text-decoration: none;
   }
-  .back:hover { transform: scale(1.05); }
 
-  canvas {
-    display: block;
-    margin: 30px auto;
-    background: rgba(255,255,255,0.03);
+  #canvas {
+    margin-top: 20px;
     border-radius: 20px;
-    box-shadow: 0 0 40px rgba(180,100,255,0.15);
+    background: rgba(255,255,255,0.03);
+    box-shadow: 0 0 30px rgba(100,0,200,0.4);
   }
 
   .controls {
+    margin-top: 20px;
     display: flex;
-    justify-content: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    justify-content: center;
   }
 
   button {
     background: linear-gradient(90deg, #8e24aa, #7e57c2);
-    border: none;
     color: white;
+    border: none;
     padding: 10px 18px;
     border-radius: 12px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 0.95em;
-    transition: 0.25s;
+    transition: 0.2s;
   }
-
   button:hover {
     transform: scale(1.1);
     background: linear-gradient(90deg, #9c27b0, #ab47bc);
   }
 
   #info {
-    margin-top: 20px;
+    margin-top: 15px;
     font-size: 1.1em;
-    color: #ccc;
+    color: #bbb;
   }
 </style>
 </head>
 <body>
 
-<div class="back" onclick="window.history.back()">← Назад</div>
-<h1>🧬 Пътуването на въглеродната молекула</h1>
-
+<a class="back" href="javascript:window.history.back()">← Назад</a>
+<h1>🧬 Пътуване на въглеродната молекула</h1>
 <canvas id="canvas" width="900" height="450"></canvas>
 
 <div class="controls">
-  <button onclick="moveMolecule('car')">🚗 Карам кола</button>
-  <button onclick="moveMolecule('plane')">✈️ Пътувам със самолет</button>
-  <button onclick="moveMolecule('factory')">🏭 Индустриално производство</button>
-  <button onclick="moveMolecule('tree')">🌳 Засаждам дърво</button>
-  <button onclick="moveMolecule('sea')">🌊 Попада в океана</button>
-  <button onclick="moveMolecule('recycle')">♻️ Рециклирам отпадъци</button>
+  <button onclick="moveCO2('car')">🚗 Колата</button>
+  <button onclick="moveCO2('plane')">✈️ Самолет</button>
+  <button onclick="moveCO2('factory')">🏭 Фабрика</button>
+  <button onclick="moveCO2('tree')">🌳 Дърво</button>
+  <button onclick="moveCO2('ocean')">🌊 Океан</button>
+  <button onclick="moveCO2('recycle')">♻️ Рециклирам</button>
 </div>
 
-<div id="info">Избери действие и виж какво се случва с молекулата CO₂.</div>
+<div id="info">Избери действие, за да стартираш пътуването на CO₂.</div>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-let molecule = { x: 100, y: 225, color: "#00ffd0" };
-let target = { x: 100, y: 225 };
-let message = "Избери действие, за да започне пътешествието на CO₂.";
+// Начално положение
+let mol = { x: 100, y: 120, color: '#00ffcc', path: [] };
+let target = { x: 100, y: 120 };
+let message = "Избери действие, за да започне.";
 
-function drawScene() {
+function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Атмосфера
-  ctx.fillStyle = "rgba(140, 130, 255, 0.15)";
+  // атмосфера зона
+  ctx.fillStyle = 'rgba(140, 130, 255, 0.15)';
   ctx.fillRect(0, 0, canvas.width, 150);
-  ctx.fillStyle = "#aaa";
-  ctx.fillText("Атмосфера", 20, 25);
+  ctx.fillStyle = '#ccc';
+  ctx.fillText('Атмосфера', 20, 25);
 
-  // Океан
-  ctx.fillStyle = "rgba(0, 200, 255, 0.1)";
-  ctx.fillRect(0, 300, canvas.width, 75);
-  ctx.fillStyle = "#aaa";
-  ctx.fillText("Океан", 20, 320);
+  // земна повърхност
+  ctx.fillStyle = 'rgba(0, 255, 150, 0.08)';
+  ctx.fillRect(0, 330, canvas.width, 120);
+  ctx.fillStyle = '#ccc';
+  ctx.fillText('Земна повърхност', 20, 350);
 
-  // Земна повърхност
-  ctx.fillStyle = "rgba(0, 255, 150, 0.08)";
-  ctx.fillRect(0, 375, canvas.width, 75);
-  ctx.fillStyle = "#aaa";
-  ctx.fillText("Земна повърхност", 20, 440);
+  // океан зона
+  ctx.fillStyle = 'rgba(0, 200, 255, 0.1)';
+  ctx.fillRect(0, 270, canvas.width, 60);
+  ctx.fillStyle = '#ccc';
+  ctx.fillText('Океан', 20, 285);
 
-  // Молекула
+  // рисуване на пътека
   ctx.beginPath();
-  ctx.arc(molecule.x, molecule.y, 14, 0, Math.PI * 2);
-  ctx.fillStyle = molecule.color;
-  ctx.shadowBlur = 25;
-  ctx.shadowColor = molecule.color;
+  for (let i = 0; i < mol.path.length; i++) {
+    const p = mol.path[i];
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // молекула
+  ctx.beginPath();
+  ctx.arc(mol.x, mol.y, 14, 0, Math.PI * 2);
+  ctx.fillStyle = mol.color;
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = mol.color;
   ctx.fill();
   ctx.closePath();
 
   ctx.shadowBlur = 0;
-  ctx.fillStyle = "white";
-  ctx.font = "16px Poppins";
-  ctx.fillText("CO₂", molecule.x - 14, molecule.y - 20);
+  ctx.fillStyle = 'white';
+  ctx.font = '16px Poppins';
+  ctx.fillText('CO₂', mol.x - 14, mol.y - 20);
 
-  // Анимация
-  molecule.x += (target.x - molecule.x) * 0.05;
-  molecule.y += (target.y - molecule.y) * 0.05;
+  // анимационно движение
+  mol.x += (target.x - mol.x) * 0.05;
+  mol.y += (target.y - mol.y) * 0.05;
 
-  document.getElementById("info").innerText = message;
-  requestAnimationFrame(drawScene);
+  // записваме точка в пътеката
+  mol.path.push({ x: mol.x, y: mol.y });
+
+  document.getElementById('info').innerText = message;
+  requestAnimationFrame(draw);
 }
 
-function moveMolecule(action) {
-  switch (action) {
-    case "car":
-      target = { x: 750, y: 100 };
-      molecule.color = "#ff3333";
-      message = "🚗 CO₂ от автомобилите се издига в атмосферата и повишава парниковия ефект.";
+function moveCO2(action) {
+  switch(action) {
+    case 'car':
+      target = { x: 800, y: 80 };
+      mol.color = '#ff4444';
+      message = "🚗 CO₂ се издига в атмосферата след горене на гориво.";
       break;
-    case "plane":
-      target = { x: 650, y: 70 };
-      molecule.color = "#ff6666";
-      message = "✈️ Самолетите освобождават CO₂ директно във високата атмосфера.";
+    case 'plane':
+      target = { x: 700, y: 60 };
+      mol.color = '#ff6666';
+      message = "✈️ CO₂ се освобождава директно в горните слоеве.";
       break;
-    case "factory":
-      target = { x: 550, y: 160 };
-      molecule.color = "#ffaa66";
-      message = "🏭 Индустриалните процеси отделят големи количества CO₂ и замърсители.";
+    case 'factory':
+      target = { x: 700, y: 180 };
+      mol.color = '#ffaa55';
+      message = "🏭 Индустриалните емисии захранват атмосферния CO₂.";
       break;
-    case "tree":
-      target = { x: 400, y: 400 };
-      molecule.color = "#33ff99";
-      message = "🌳 Растенията улавят CO₂ чрез фотосинтеза и го превръщат в кислород.";
+    case 'tree':
+      target = { x: 450, y: 400 };
+      mol.color = '#33ff99';
+      message = "🌳 CO₂ поглъщан от растителността чрез фотосинтеза.";
       break;
-    case "sea":
-      target = { x: 250, y: 330 };
-      molecule.color = "#33ccff";
-      message = "🌊 Част от CO₂ се разтваря в океана, променяйки неговото pH и екосистемите.";
+    case 'ocean':
+      target = { x: 300, y: 300 };
+      mol.color = '#33ccff';
+      message = "🌊 CO₂ се разтваря в океана и повлиява химията му.";
       break;
-    case "recycle":
-      target = { x: 500, y: 390 };
-      molecule.color = "#00ffcc";
-      message = "♻️ Рециклирането спестява енергия и намалява въглеродните емисии.";
+    case 'recycle':
+      target = { x: 550, y: 380 };
+      mol.color = '#00ffcc';
+      message = "♻️ Рециклирането намалява нуждата от нови емисии.";
       break;
   }
 }
 
-drawScene();
+// стартираме
+draw();
 </script>
 </body>
 </html>
